@@ -22,7 +22,7 @@
 #include "binomialtree.hpp"
 #include <ql/math/distributions/binomialdistribution.hpp>
 #include <ql/stochasticprocess.hpp>
-
+#include <iostream>
 namespace QuantLib {
 
     JarrowRudd_2::JarrowRudd_2(
@@ -45,6 +45,14 @@ namespace QuantLib {
 
         QL_REQUIRE(pu_<=1.0, "negative probability");
         QL_REQUIRE(pu_>=0.0, "negative probability");
+
+        //std::cout<<"columns: "<<columns()<<std::endl;
+        //std::cout<<"size of column 2: "<<size(1)<<std::endl;
+        //std::cout<<"underlying at t0: "<<underlying(0,0)<<std::endl;
+        //std::cout<<"underlying at t1 down: "<<underlying(1,0)<<std::endl;
+        //std::cout<<"underlying at t1 up: "<<underlying(1,1)<<std::endl;
+        //std::cout<<"underlying at t2 up then down: "<<underlying(2,1)<<std::endl;
+
     }
 
 
