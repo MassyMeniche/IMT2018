@@ -1,4 +1,3 @@
-
 #include "binomialtree.hpp"
 #include "binomialengine.hpp"
 #include <ql/methods/lattices/tree.hpp>
@@ -17,6 +16,9 @@
 #include <boost/timer.hpp>
 #include <iomanip>
 #include <iostream>
+
+#include <chrono>
+#include <ctime>
 
 using namespace QuantLib;
 
@@ -57,7 +59,6 @@ int main() {
                   << std::endl;
         std::cout << std::endl;
         std::string method;
-        std::cout << std::endl ;
 
         //Set up exercise
         boost::shared_ptr<Exercise> europeanExercise(new EuropeanExercise(maturity));
@@ -83,22 +84,233 @@ int main() {
         // Option Definition
         VanillaOption europeanOption(payoff, europeanExercise);
 
-        // Pricing Engine
-        Size timeSteps = 801;
-        europeanOption.setPricingEngine(boost::shared_ptr<PricingEngine>(new BinomialVanillaEngine_2<CoxRossRubinstein_2>(bsmProcess,timeSteps)));
-        //std::cout << europeanOption.NPV() << std::endl;
-
-        // Greeks calculated using the binomial tree
-        std::cout << "Delta calculated with the actual Binomial engine: "<<europeanOption.delta() << std::endl;
-        std::cout << "Gamma calculated with the actual Binomial engine: "<<europeanOption.gamma() << std::endl;
 
         // Greeks calculated using the analytic B&S formula
-        method = "Black-Scholes";
+
         europeanOption.setPricingEngine(boost::shared_ptr<PricingEngine>(
                                     new AnalyticEuropeanEngine(bsmProcess)));
         std::cout <<  std::endl;
+
+        auto starttimeBSDelta = std::chrono::system_clock::now();
+
         std::cout << "Black & Scholes Delta: "<<europeanOption.delta() << std::endl;
+
+        auto endtimeBSDelta = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_secondsBSDelta = endtimeBSDelta-starttimeBSDelta;
+        std::time_t end_timeBSDelta = std::chrono::system_clock::to_time_t(endtimeBSDelta);
+        std::cout << "Black&Scholes Delta calculation time: " << elapsed_secondsBSDelta.count() << "s\n";
+
+        auto starttimeBSGamma = std::chrono::system_clock::now();
+
         std::cout << "Black & Scholes Gamma: "<<europeanOption.gamma() << std::endl;
+
+        auto endtimeBSGamma = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_secondsBSGamma = endtimeBSGamma-starttimeBSGamma;
+        std::time_t end_timeBSGamma = std::chrono::system_clock::to_time_t(endtimeBSGamma);
+        std::cout << "Black&Scholes Gamma calculation time: " << elapsed_secondsBSGamma.count() << "s\n";
+        std::cout << std::endl ;
+        std::cout << std::endl ;
+
+
+
+        Size timeSteps = 801;
+
+        // Pricing Engine : BinomialVanillaEngine<CoxRossRubinstein>
+        std::cout << "Cox Ross Rubinstein: "<<std::endl;
+
+        europeanOption.setPricingEngine(boost::shared_ptr<PricingEngine>(new BinomialVanillaEngine_2<CoxRossRubinstein_2>(bsmProcess,timeSteps)));
+        //std::cout << europeanOption.NPV() << std::endl;
+
+        // Greeks calculated using the binomial tree (New implementation)
+
+        auto starttimeTreeDeltaC = std::chrono::system_clock::now();
+
+        std::cout << "Delta calculated with the New Binomial engine: "<<europeanOption.delta() << std::endl;
+
+        auto endtimeTreeDeltaC = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_secondsTreeDeltaC = endtimeTreeDeltaC-starttimeTreeDeltaC;
+        std::time_t end_timeTreeDeltaC = std::chrono::system_clock::to_time_t(endtimeTreeDeltaC);
+        std::cout << "Binomial Tree Delta calculation time: " << elapsed_secondsTreeDeltaC.count() << "s\n";
+
+        auto starttimeTreeGammaC = std::chrono::system_clock::now();
+
+        std::cout << "Gamma calculated with the New Binomial engine: "<<europeanOption.gamma() << std::endl;
+
+        auto endtimeTreeGammaC = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_secondsTreeGammaC = endtimeTreeGammaC-starttimeTreeGammaC;
+        std::time_t end_timeTreeGammaC = std::chrono::system_clock::to_time_t(endtimeTreeGammaC);
+        std::cout << "Binomial Tree Gamma calculation time: " << elapsed_secondsTreeGammaC.count() << "s\n";
+        std::cout << std::endl ;
+
+        // Pricing Engine : BinomialVanillaEngine<Trigeorgis>
+
+        std::cout << "Trigeorgis: " << std::endl;
+
+        europeanOption.setPricingEngine(boost::shared_ptr<PricingEngine>(new BinomialVanillaEngine_2<Trigeorgis_2>(bsmProcess,timeSteps)));
+        //std::cout << europeanOption.NPV() << std::endl;
+
+        // Greeks calculated using the binomial tree (new implementation)
+
+        auto starttimeTreeDeltaT = std::chrono::system_clock::now();
+
+        std::cout << "Delta calculated with the New Binomial engine: "<<europeanOption.delta() << std::endl;
+
+        auto endtimeTreeDeltaT = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_secondsTreeDeltaT = endtimeTreeDeltaT-starttimeTreeDeltaT;
+        std::time_t end_timeTreeDeltaT = std::chrono::system_clock::to_time_t(endtimeTreeDeltaT);
+        std::cout << "Binomial Tree Delta calculation time: " << elapsed_secondsTreeDeltaT.count() << "s\n";
+
+        auto starttimeTreeGammaT = std::chrono::system_clock::now();
+
+        std::cout << "Gamma calculated with the New Binomial engine: "<<europeanOption.gamma() << std::endl;
+
+        auto endtimeTreeGammaT = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_secondsTreeGammaT = endtimeTreeGammaT-starttimeTreeGammaT;
+        std::time_t end_timeTreeGammaT = std::chrono::system_clock::to_time_t(endtimeTreeGammaT);
+        std::cout << "Binomial Tree Gamma calculation time: " << elapsed_secondsTreeGammaT.count() << "s\n";
+        std::cout << std::endl ;
+
+         // Pricing Engine : BinomialVanillaEngine<JarrowRudd>
+
+        std::cout << "Jarrow Rudd: " << std::endl;
+
+        europeanOption.setPricingEngine(boost::shared_ptr<PricingEngine>(new BinomialVanillaEngine_2<JarrowRudd_2>(bsmProcess,timeSteps)));
+        //std::cout << europeanOption.NPV() << std::endl;
+
+        // Greeks calculated using the binomial tree (New implementation)
+
+        auto starttimeTreeDeltaJ = std::chrono::system_clock::now();
+
+        std::cout << "Delta calculated with the New Binomial engine: "<<europeanOption.delta() << std::endl;
+
+        auto endtimeTreeDeltaJ = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_secondsTreeDeltaJ = endtimeTreeDeltaJ-starttimeTreeDeltaJ;
+        std::time_t end_timeTreeDeltaJ = std::chrono::system_clock::to_time_t(endtimeTreeDeltaJ);
+        std::cout << "Binomial Tree Delta calculation time: " << elapsed_secondsTreeDeltaJ.count() << "s\n";
+
+        auto starttimeTreeGammaJ = std::chrono::system_clock::now();
+
+        std::cout << "Gamma calculated with the New Binomial engine: "<<europeanOption.gamma() << std::endl;
+
+        auto endtimeTreeGammaJ = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_secondsTreeGammaJ = endtimeTreeGammaJ-starttimeTreeGammaJ;
+        std::time_t end_timeTreeGammaJ = std::chrono::system_clock::to_time_t(endtimeTreeGammaJ);
+        std::cout << "Binomial Tree Gamma calculation time: " << elapsed_secondsTreeGammaJ.count() << "s\n";
+        std::cout << std::endl ;
+
+        // Pricing Engine : BinomialVanillaEngine<AdditiveEQPBinomialTree>
+
+        std::cout << "Additive EQP Binomial Tree: " << std::endl;
+
+        europeanOption.setPricingEngine(boost::shared_ptr<PricingEngine>(new BinomialVanillaEngine_2<AdditiveEQPBinomialTree_2>(bsmProcess,timeSteps)));
+        //std::cout << europeanOption.NPV() << std::endl;
+
+        // Greeks calculated using the binomial tree (New implementation)
+
+        auto starttimeTreeDeltaA = std::chrono::system_clock::now();
+
+        std::cout << "Delta calculated with the New Binomial engine: "<<europeanOption.delta() << std::endl;
+
+        auto endtimeTreeDeltaA = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_secondsTreeDeltaA = endtimeTreeDeltaA-starttimeTreeDeltaA;
+        std::time_t end_timeTreeDeltaA = std::chrono::system_clock::to_time_t(endtimeTreeDeltaA);
+        std::cout << "Binomial Tree Delta calculation time: " << elapsed_secondsTreeDeltaA.count() << "s\n";
+
+        auto starttimeTreeGammaA = std::chrono::system_clock::now();
+
+        std::cout << "Gamma calculated with the New Binomial engine: "<<europeanOption.gamma() << std::endl;
+
+        auto endtimeTreeGammaA = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_secondsTreeGammaA = endtimeTreeGammaA-starttimeTreeGammaA;
+        std::time_t end_timeTreeGammaA = std::chrono::system_clock::to_time_t(endtimeTreeGammaA);
+        std::cout << "Binomial Tree Gamma calculation time: " << elapsed_secondsTreeGammaA.count() << "s\n";
+        std::cout << std::endl ;
+
+        // Pricing Engine : BinomialVanillaEngine<Tian>
+
+        std::cout << "Tian: " << std::endl;
+
+        europeanOption.setPricingEngine(boost::shared_ptr<PricingEngine>(new BinomialVanillaEngine_2<Tian_2>(bsmProcess,timeSteps)));
+        //std::cout << europeanOption.NPV() << std::endl;
+
+        // Greeks calculated using the binomial tree (New implementation)
+
+        auto starttimeTreeDeltaTI = std::chrono::system_clock::now();
+
+        std::cout << "Delta calculated with the New Binomial engine: "<<europeanOption.delta() << std::endl;
+
+        auto endtimeTreeDeltaTI = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_secondsTreeDeltaTI = endtimeTreeDeltaTI-starttimeTreeDeltaTI;
+        std::time_t end_timeTreeDeltaTI = std::chrono::system_clock::to_time_t(endtimeTreeDeltaTI);
+        std::cout << "Binomial Tree Delta calculation time: " << elapsed_secondsTreeDeltaTI.count() << "s\n";
+
+        auto starttimeTreeGammaTI = std::chrono::system_clock::now();
+
+        std::cout << "Gamma calculated with the New Binomial engine: "<<europeanOption.gamma() << std::endl;
+
+        auto endtimeTreeGammaTI = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_secondsTreeGammaTI = endtimeTreeGammaTI-starttimeTreeGammaTI;
+        std::time_t end_timeTreeGammaTI = std::chrono::system_clock::to_time_t(endtimeTreeGammaTI);
+        std::cout << "Binomial Tree Gamma calculation time: " << elapsed_secondsTreeGammaTI.count() << "s\n";
+        std::cout << std::endl ;
+
+
+        // Pricing Engine : BinomialVanillaEngine<LeisenReimer>
+
+        std::cout << "Leisen Reimer: " << std::endl;
+
+        europeanOption.setPricingEngine(boost::shared_ptr<PricingEngine>(new BinomialVanillaEngine_2<LeisenReimer_2>(bsmProcess,timeSteps)));
+        //std::cout << europeanOption.NPV() << std::endl;
+
+        // Greeks calculated using the binomial tree (New implementation)
+
+        auto starttimeTreeDeltaL = std::chrono::system_clock::now();
+
+        std::cout << "Delta calculated with the New Binomial engine: "<<europeanOption.delta() << std::endl;
+
+        auto endtimeTreeDeltaL = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_secondsTreeDeltaL = endtimeTreeDeltaL-starttimeTreeDeltaL;
+        std::time_t end_timeTreeDeltaL = std::chrono::system_clock::to_time_t(endtimeTreeDeltaL);
+        std::cout << "Binomial Tree Delta calculation time: " << elapsed_secondsTreeDeltaL.count() << "s\n";
+
+        auto starttimeTreeGammaL = std::chrono::system_clock::now();
+
+        std::cout << "Gamma calculated with the New Binomial engine: "<<europeanOption.gamma() << std::endl;
+
+        auto endtimeTreeGammaL = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_secondsTreeGammaL = endtimeTreeGammaL-starttimeTreeGammaL;
+        std::time_t end_timeTreeGammaL = std::chrono::system_clock::to_time_t(endtimeTreeGammaL);
+        std::cout << "Binomial Tree Gamma calculation time: " << elapsed_secondsTreeGammaL.count() << "s\n";
+        std::cout << std::endl ;
+
+
+        // Pricing Engine : BinomialVanillaEngine<Joshi4>
+
+        std::cout << "Joshi: " << std::endl;
+
+        europeanOption.setPricingEngine(boost::shared_ptr<PricingEngine>(new BinomialVanillaEngine_2<Joshi4_2>(bsmProcess,timeSteps)));
+        //std::cout << europeanOption.NPV() << std::endl;
+
+        // Greeks calculated using the binomial tree (New implementation)
+
+        auto starttimeTreeDeltaJO = std::chrono::system_clock::now();
+
+        std::cout << "Delta calculated with the New Binomial engine: "<<europeanOption.delta() << std::endl;
+
+        auto endtimeTreeDeltaJO = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_secondsTreeDeltaJO = endtimeTreeDeltaJO-starttimeTreeDeltaJO;
+        std::time_t end_timeTreeDeltaJO = std::chrono::system_clock::to_time_t(endtimeTreeDeltaJO);
+        std::cout << "Binomial Tree Delta calculation time: " << elapsed_secondsTreeDeltaJO.count() << "s\n";
+
+        auto starttimeTreeGammaJO = std::chrono::system_clock::now();
+
+        std::cout << "Gamma calculated with the New Binomial engine: "<<europeanOption.gamma() << std::endl;
+
+        auto endtimeTreeGammaJO = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_secondsTreeGammaJO = endtimeTreeGammaJO-starttimeTreeGammaJO;
+        std::time_t end_timeTreeGammaJO = std::chrono::system_clock::to_time_t(endtimeTreeGammaJO);
+        std::cout << "Binomial Tree Gamma calculation time: " << elapsed_secondsTreeGammaJO.count() << "s\n";
+        std::cout << std::endl ;
 
         return 0;
 
@@ -110,4 +322,3 @@ int main() {
         return 1;
     }
 }
-
